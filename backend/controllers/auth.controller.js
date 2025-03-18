@@ -1,4 +1,4 @@
-import generateToeknAndSetCookie from '../../utils/generateToken.js';
+import generateTokenAndSetCookie from '../../utils/generateToken.js';
 import User from '../models/user.model.js'
 import bcrypt from 'bcryptjs';
 
@@ -31,7 +31,7 @@ export const signup = async (req, res) => {
         });
 
         if (newUser) {
-            generateToeknAndSetCookie(newUser.id, res)
+            generateTokenAndSetCookie(newUser.id, res)
             await newUser.save();
 
             res.status(201).json({
@@ -45,7 +45,7 @@ export const signup = async (req, res) => {
                 }
             });
         } else {
-            res.status(400).json({
+            res.status(404).json({
                 success: false,
                 message: 'User not created: Invalid user data',
             });
@@ -64,10 +64,55 @@ export const signup = async (req, res) => {
 }
 
 
-export const login = (req, res) => {
-    res.send('login user')
+export const login = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
+        const isPasswordCorrect = await bcrypt.compare(password, user?.password || "");
+        if (!user || !isPasswordCorrect) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid username or password',
+                stack: error.stack
+            })
+        } else {
+            generateTokenAndSetCookie(user._id, res);
+
+            res.status(200).json({
+                success: true,
+                message: 'User logged in successfully',
+                user: {
+                    _id: user._id,
+                    fullname: user.fullname,
+                    username: user.username,
+                    profilePic: user.profilePic,
+                }
+            })
+        }
+    } catch (error) {
+        console.log('login user failed')
+        return res.status(500).json({
+            success: false,
+            message: 'User cannot login',
+            error: error.message,
+            stack: error.stack,
+        })
+    }
 }
 
-export const logout = (req, res) => {
-    res.send('logout user')
+export const logout = async (req, res) => {
+    try {
+        res.cookie("jwt", "", {maxAge:0});
+        res.status(200).json({
+            success: true,
+            message: 'User logged out successfully',
+        })
+    } catch (error) {
+        console.log('Error in logout controller', error.message)
+        return res.status(500).json({
+            success: false,
+            message: 'Error in logout controller',
+            stack: error.stack,
+        });
+    }
 }
