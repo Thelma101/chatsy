@@ -1,3 +1,4 @@
+import generateToeknAndSetCookie from '../../utils/generateToken.js';
 import User from '../models/user.model.js'
 import bcrypt from 'bcryptjs';
 
@@ -27,28 +28,41 @@ export const signup = async (req, res) => {
             password: hashedPassword,
             gender,
             profilePic: gender === 'male' ? boyProfilePic : girlProfilePic,
-        })
-        await newUser.save();
-        res.status(201).json({
-            message: 'User created successfully',
-            success: true,
-            message: 'User created successfully',
-            user: {
-                _id: newUser._id,
-                fullname: newUser.fullname,
-                username: newUser.username,
-                profilePic: newUser.profilePic
-            }
         });
+
+        if (newUser) {
+            generateToeknAndSetCookie(newUser.id, res)
+            await newUser.save();
+
+            res.status(201).json({
+                success: true,
+                message: 'User created successfully',
+                user: {
+                    _id: newUser._id,
+                    fullname: newUser.fullname,
+                    username: newUser.username,
+                    profilePic: newUser.profilePic,
+                }
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                message: 'User not created: Invalid user data',
+            });
+        }
     } catch (error) {
-        console.log('loginuser')
+        console.log('create user failed')
         return res.status(500).json({
             success: false,
             message: 'Error creating user',
-            error: error.message
+            error: error.message,
+            errorMessage: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString(),
         })
     }
 }
+
 
 export const login = (req, res) => {
     res.send('login user')
