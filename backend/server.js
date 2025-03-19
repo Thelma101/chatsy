@@ -7,6 +7,8 @@ dotenv.config();
 import authRoutes from './routes/auth.routes.js';
 import connectToMongoDB from './db/connectToMongoDB.js';
 import User from './models/user.model.js';
+import Message from './models/message.model.js';
+import Conversation from './models/conversation.model.js';
 
 const PORT = process.env.PORT || 5002;
 
