@@ -3,16 +3,15 @@ import dotenv from 'dotenv';
 
 const app = express();
 dotenv.config();
-
+import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.routes.js';
 import connectToMongoDB from './db/connectToMongoDB.js';
 import User from './models/user.model.js';
-import Message from './models/message.model.js';
-import Conversation from './models/conversation.model.js';
-
+import messageRoutes from './routes/message.routes.js';
 const PORT = process.env.PORT || 5002;
 
 app.use(express.json());
+app.use(cookieParser());
 
 // app.get('/', (req, res) => {
 //     res.send('Hello World')
@@ -34,9 +33,10 @@ app.get('/', async (req, res) => {
     }
 })
 
-app.use('/api/auth', authRoutes)
+app.use('/api/auth', authRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.listen(PORT, () => {
     connectToMongoDB();
     console.log(`Application server is running on ${PORT}`)
-})
+});
