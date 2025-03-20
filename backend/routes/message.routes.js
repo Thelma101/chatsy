@@ -3,6 +3,6 @@ import { sendMessage } from '../controllers/message.controller.js';
 
 const router = express.Router();
 
-// router.post('send/:id', protectedRoute, sendMessage);
+router.post('send/:id', protectedRoute, sendMessage);
 
 export default router;
